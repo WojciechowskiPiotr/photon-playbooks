@@ -1,0 +1,31 @@
+---
+- name: Install additional packages
+  hosts: photon
+  connection: ssh
+  gather_facts: no
+  vars:
+    - ansible_python_interpreter: "/usr/bin/python3"
+
+  tasks:
+    - name: Download pip installer
+      get_url:
+        url: https://bootstrap.pypa.io/get-pip.py
+        dest: ~/get-pip.py
+
+    - name: Install pip via script
+      command: python3 ~/get-pip.py
+
+    - name: Install virtualenv via pip
+      pip:
+        name: virtualenv
+
+    - name: Install docker-compose via pip
+      pip:
+        name: docker-compose
+
+    - name: Start docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+

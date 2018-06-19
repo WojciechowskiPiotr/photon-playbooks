@@ -1,0 +1,5 @@
+---
+- import_playbook: playbooks/preconfigure_stage.yml
+- import_playbook: playbooks/preconfigure_adduser.yml
+- import_playbook: playbooks/preconfigure_packages.yml
+- import_playbook: playbooks/preconfigure_python_docker.yml

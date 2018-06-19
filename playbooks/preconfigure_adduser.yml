@@ -1,0 +1,50 @@
+---
+- name: Initial PhotonOS configuration
+  hosts: photon
+  connection: ssh
+  gather_facts: no
+
+  tasks:
+    - name: Check if host is accessible
+      wait_for:
+        port: 22
+        host: '{{ inventory_hostname }}'
+        search_regex: OpenSSH
+        delay: 30
+        sleep: 5
+        timeout: 300
+      connection: local
+      register: host_accessible
+      failed_when: False
+
+    - name: Check uptime on remote hosts
+      shell: uptime
+      register: uptime
+
+    - name: Display uptime
+      debug:
+        msg: "Current system uptime: {{ uptime.stdout_lines }}"
+
+    - name: Create user
+      user:
+        user: "{{ host_new_user }}"
+        append: no
+        generate_ssh_key: yes
+        ssh_key_bits: 4096
+        ssh_key_file: .ssh/id_rsa
+        create_home: yes
+        state: present
+
+    - name: Add ssh key to user profile
+      authorized_key:
+        user: "{{ host_new_user }}"
+        state: present
+        exclusive: yes
+        key: "{{ lookup('file', '/Users/peper/.ssh/Lab-Key.pub') }}"
+
+    - name: Add users to sudo group
+      user:
+        user: "{{ host_new_user }}"
+        append: yes
+        groups: sudo,docker
+

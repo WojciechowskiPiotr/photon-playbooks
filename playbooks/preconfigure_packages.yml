@@ -1,0 +1,18 @@
+---
+- name: Install additional packages
+  hosts: photon
+  connection: ssh
+  gather_facts: no
+
+  tasks:
+    - name: Refresh packages cache
+      command: tdnf makecache
+
+    - name: Install additional essential packages
+      command: tdnf install -y  diffutils audit binutils util-linux mc gzip tar coreutils bzip2 sudo less
+
+    - name: Install additional network packages
+      command: tdnf install -y  curl wget tcpdump openssl iputils netkit-telnet net-tools git
+
+    - name: Upgrade existing packages
+      command: tdnf upgrade -y

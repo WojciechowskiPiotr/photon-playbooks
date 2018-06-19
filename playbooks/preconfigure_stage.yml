@@ -1,0 +1,69 @@
+---
+- name: Initial PhotonOS configuration
+  hosts: stage
+  connection: ssh
+  gather_facts: yes
+
+  tasks:
+    - name: Get IP address based on DNS name
+      set_fact:
+        hostipaddress: "{{ lookup('dig', hostdnsname)}}"
+      register: lookup_result
+      failed_when: "'NXDOMAIN' in lookup_result.ansible_facts.hostipaddress"
+
+    - name: Set authorized key took from file
+      authorized_key:
+        user: root
+        state: present
+        exclusive: yes
+        key: "{{ lookup('file', ssh_public_key_file) }}"
+
+    - name: Generate ssh key for user root
+      user:
+        name: root
+        append: yes
+        generate_ssh_key: yes
+        ssh_key_bits: 4096
+        ssh_key_file: .ssh/id_rsa
+
+    - name: Configure static hostname and domainname via recommended photonos commands
+      command: hostnamectl set-hostname {{ hostdnsname }}
+
+    - name: Fix umask from 027 to 022
+      replace:
+        path: /etc/profile
+        regexp: '^umask 027$'
+        replace: 'umask 022'
+        backup: yes
+
+    - name: Fix shell prompt to display full FQDN name
+      replace:
+        path: /etc/profile
+        regexp: '\\u@\\h \['
+        replace: '\\u@\\H \['
+        backup: yes
+
+
+    - name: Disable DHCP on eth interfaces
+      replace:
+        path: /etc/systemd/network/99-dhcp-en.network
+        regexp: '^DHCP=yes$'
+        replace: 'DHCP=no'
+        backup: no
+
+    - name: Set static configuration of eth0
+      template:
+        src: templates/10-eth0-static.j2
+        dest: /etc/systemd/network/10-eth0-static.network
+        owner: root
+        group: root
+        mode: "u=rw,g=r,o=r"
+
+    - name: Reboot the system
+      shell: sleep 2 && /sbin/shutdown -r now "Ansible reboot"
+      async: 1
+      poll: 0
+      ignore_errors: true
+
+    - name: Pause to wait for system to reboot
+      pause: seconds=30
