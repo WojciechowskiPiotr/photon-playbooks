@@ -1,0 +1,7 @@
+---
+ansible_user: root
+ssh_public_key_file: # Path to SSH public key
+ansible_ssh_pass: # root account password
+host_new_user: # Login of non-root account to create
+## Don't change the variables below
+ansible_python_interpreter: /usr/bin/python3

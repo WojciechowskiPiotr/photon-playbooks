@@ -3,8 +3,6 @@
   hosts: photon
   connection: ssh
   gather_facts: no
-  vars:
-    - ansible_python_interpreter: "/usr/bin/python3"
 
   tasks:
     - name: Download pip installer

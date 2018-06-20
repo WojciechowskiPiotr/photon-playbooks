@@ -40,7 +40,7 @@
         user: "{{ host_new_user }}"
         state: present
         exclusive: yes
-        key: "{{ lookup('file', '/Users/peper/.ssh/Lab-Key.pub') }}"
+        key: "{{ lookup('file', ssh_public_key_file) }}"
 
     - name: Add users to sudo group
       user:
